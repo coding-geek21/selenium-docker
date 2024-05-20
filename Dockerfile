@@ -1,33 +1,21 @@
-FROM --platform=linux/amd64 python:3.9-buster
+FROM ubuntu:20.04
 
-# install google chrome
+# Install dependencies
+RUN apt-get update && apt-get install -y wget gnupg2
 
+# Install Chrome
 RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
+RUN sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
+RUN apt-get update && apt-get install -y google-chrome-stable
 
-RUN sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >>
-/etc/apt/sources.list.d/google-chrome.list'
+# Install Selenium and other dependencies
+RUN apt-get install -y python3 python3-pip
+RUN pip3 install selenium
 
-RUN apt-get -y update
+# Set up your WebDriver tests here (e.g., Python script)
 
-RUN apt-get install -y google-chrome-stable
+# Expose ports
+EXPOSE 4444
 
-# install chromedriver
-
-RUN apt-get install -yqq unzip
-
-RUN wget -O /tmp/chromedriver.zip http://chromedriver.storage.googleapis.com/`curl -sS
-chromedriver.storage.googleapis.com/LATEST_RELEASE`/chromedriver_linux64.zip
-
-RUN unzip /tmp/chromedriver.zip chromedriver -d /usr/local/bin/
-
-# set display port to avoid crash
-
-ENV DISPLAY=:99
-
-# install selenium
-
-RUN pip install selenium==4.3.0
-
-COPY . .
-
-CMD python tests.py
+# Start your Selenium server
+CMD ["java", "-jar", "/path/to/selenium-server-standalone.jar"]
